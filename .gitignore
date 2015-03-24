@@ -5,3 +5,8 @@
 *.DS_Store
 .*.swp
 *.out
+*.bak
+doku/KCPSM3_Manual.pdf
+simulation/work/*
+simulation/work
+simulation/modelsim.ini
