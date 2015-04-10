@@ -1,0 +1,38 @@
+ls
+# call.hex  int.hex  picocpu_tb.vhd  rom.hex  run.do  sim.bat  transcript  wave.do      
+do run.do
+# Copying C:\altera\13.0\modelsim_ase\win32aloem/../modelsim.ini to modelsim.ini
+# Modifying modelsim.ini
+# ** Warning: Copied C:\altera\13.0\modelsim_ase\win32aloem/../modelsim.ini to modelsim.ini.
+#          Updated modelsim.ini.
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu_rom
+# -- Compiling architecture behavioral of picocpu_rom
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu
+# -- Compiling architecture behavioral of picocpu
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu_tb
+# -- Compiling architecture behavioral of picocpu_tb
+# vsim -novopt work.picocpu_tb 
+# Loading std.standard
+# Loading std.textio(body)
+# Loading ieee.std_logic_1164(body)
+# Loading ieee.numeric_std(body)
+# Loading work.picocpu_tb(behavioral)
+# Loading work.picocpu_rom(behavioral)
+# Loading work.picocpu(behavioral)
+# 0 ps
+# 3800 ns
