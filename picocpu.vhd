@@ -83,10 +83,11 @@ architecture behavioral of picocpu is
   type regs_t is array(0 to reg_num_c-1) of std_logic_vector(reg_width_c-1 downto 0);
   signal regs            : regs_t := ( others => ( others => '0' ));
   signal res             : std_logic_vector(reg_width_c downto 0) := ( others => '0' );
+  signal res_reg         : std_logic_vector(reg_width_c downto 0) := ( others => '0' );
 
   signal int_en_flag     : std_logic                    := '0';
   signal zero_flag       : std_logic                    := '0';
-  alias  carry_flag      : std_logic                    is res(res'high);
+  alias  carry_flag      : std_logic                    is res_reg(res_reg'high);
   signal preserved_zero  : std_logic                    := '0';
   signal preserved_carry : std_logic                    := '0';
   
@@ -251,7 +252,55 @@ begin
   ------------------------------------------------------------
   -- TODO: Alle Befehle Testen                              --
   ------------------------------------------------------------
-
+  
+         -- Logical Group
+  res <= '0' & const                                                                                                                                       when inst = load_c    and condition = '0' else
+         '0' & regs(to_integer(unsigned(sY)))                                                                                                              when inst = load_c    and condition = '1' else
+         '0' & regs(to_integer(unsigned(sX))) and const                                                                                                    when inst = and_c     and condition = '0' else
+         '0' & regs(to_integer(unsigned(sX))) and regs(to_integer(unsigned(sY)))                                                                           when inst = and_c     and condition = '1' else
+         '0' & regs(to_integer(unsigned(sX))) or const                                                                                                     when inst = or_c      and condition = '0' else
+         '0' & regs(to_integer(unsigned(sX))) or regs(to_integer(unsigned(sY)))                                                                            when inst = or_c      and condition = '1' else                           
+         '0' & regs(to_integer(unsigned(sX))) xor const                                                                                                    when inst = xor_c     and condition = '0' else
+         '0' & regs(to_integer(unsigned(sX))) xor regs(to_integer(unsigned(sY)))                                                                           when inst = xor_c     and condition = '1' else
+         parity(res_reg) & regs(to_integer(unsigned(sX))) and const                                                                                        when inst = test_c    and condition = '0' else
+         parity(res_reg) & regs(to_integer(unsigned(sX))) and regs(to_integer(unsigned(sY)))                                                               when inst = test_c    and condition = '1' else
+         -- Arithmetic Group
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & const))                                                          when inst = add_c     and condition = '0' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & regs(to_integer(unsigned(sY)))))                                 when inst = add_c     and condition = '1' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & const) + unsigned(zero_c & carry_flag))                          when inst = addcy_c   and condition = '0' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & regs(to_integer(unsigned(sY)))) + unsigned(zero_c & carry_flag)) when inst = addcy_c   and condition = '1' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & const))                                                          when inst = sub_c     and condition = '0' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & regs(to_integer(unsigned(sY)))))                                 when inst = sub_c     and condition = '1' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & const) - unsigned(zero_c & carry_flag))                          when inst = subcy_c   and condition = '0' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & regs(to_integer(unsigned(sY)))) - unsigned(zero_c & carry_flag)) when inst = subcy_c   and condition = '1' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & const))                                                          when inst = compare_c and condition = '0' else
+         std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & regs(to_integer(unsigned(sY)))))                                 when inst = compare_c and condition = '1' else
+         -- Shift and Rotate Groupe
+         regs(to_integer(unsigned(sX)))(sX'right) & '0' & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1)                                           when inst = sr_c      and direction = '1' and sr_code = shift_0 else
+         regs(to_integer(unsigned(sX)))(sX'right) & '1' & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1)                                           when inst = sr_c      and direction = '1' and sr_code = shift_1 else
+         regs(to_integer(unsigned(sX)))(sX'right) & regs(to_integer(unsigned(sX)))(sX'left) & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1)       when inst = sr_c      and direction = '1' and sr_code = shift_x else
+         regs(to_integer(unsigned(sX)))(sX'right) & carry_flag & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1)                                    when inst = sr_c      and direction = '1' and sr_code = shift_a else
+         regs(to_integer(unsigned(sX)))(sX'right) & regs(to_integer(unsigned(sX)))(sX'right) & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1)      when inst = sr_c      and direction = '1' and sr_code = rotate  else
+         regs(to_integer(unsigned(sX)))(sX'left)  & regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & '0'                                           when inst = sr_c      and direction = '0' and sr_code = shift_0 else
+         regs(to_integer(unsigned(sX)))(sX'left)  & regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & '1'                                           when inst = sr_c      and direction = '0' and sr_code = shift_1 else        
+         regs(to_integer(unsigned(sX)))(sX'left)  & regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & regs(to_integer(unsigned(sX)))(sX'right)      when inst = sr_c      and direction = '0' and sr_code = shift_x else        
+         regs(to_integer(unsigned(sX)))(sX'left)  & regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & carry_flag                                    when inst = sr_c      and direction = '0' and sr_code = shift_a else                 
+         regs(to_integer(unsigned(sX)))(sX'left)  & regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & regs(to_integer(unsigned(sX)))(sX'left)       when inst = sr_c      and direction = '0' and sr_code = rotate  else
+         -- Return from Interrupt      
+         preserved_carry & zero_c                                                                                                                          when inst = returni_c                                           else 
+         ( others => '0' );
+          
+    process(clk_in, rst_n)
+    begin 
+      if rst_n = '0' then
+        res_reg        <= ( others => '0' );
+      elsif clk_in'event and clk_in = '1' then
+        if t_state = '0' then
+          res_reg <= res;        
+        end if;
+      end if;
+    end process;
+  
   process(clk_in, rst_n)
   begin 
     if rst_n = '0' then
@@ -260,105 +309,10 @@ begin
       if t_state = '1' then
         if inst = returni_c then
           zero_flag <= preserved_zero;
-        elsif res(reg_width_c-1 downto 0) = zero_c then
+        elsif res_reg(reg_width_c-1 downto 0) = zero_c then
           zero_flag <= '1';
         else
           zero_flag <= '0';    
-        end if;
-      end if;
-    end if;
-  end process;
-
-  process(clk_in, rst_n)
-  begin 
-    if rst_n = '0' then
-      res        <= ( others => '0' );
-      carry_flag <= '0';
-    elsif clk_in'event and clk_in = '1' then
-      if t_state = '0' then
-        -- Logical Group
-        if inst = load_c and condition = '0' then
-          res(reg_width_c-1 downto 0) <= const;
-        elsif inst = load_c and condition = '1' then  
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sY)));
-        elsif inst = and_c and condition = '0' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) and const;
-          carry_flag <= '0';
-        elsif inst = and_c and condition = '1' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) and regs(to_integer(unsigned(sY)));
-          carry_flag <= '0';
-        elsif inst = or_c and condition = '0' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) or const;
-          carry_flag <= '0';
-        elsif inst = or_c and condition = '1' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) or regs(to_integer(unsigned(sY)));
-          carry_flag <= '0';
-        elsif inst = xor_c and condition = '0' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) xor const;
-          carry_flag <= '0';
-        elsif inst = xor_c and condition = '1' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) xor regs(to_integer(unsigned(sY)));
-          carry_flag <= '0';
-        elsif inst = test_c and condition = '0' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) and const;
-          carry_flag <= parity(res);
-        elsif inst = test_c and condition = '1' then
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX))) and regs(to_integer(unsigned(sY)));
-          carry_flag <= parity(res);
-        -- Arithmetic Group
-        elsif inst = add_c and condition = '0' then
-          res <= std_logic_vector(unsigned( '0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & const));
-        elsif inst = add_c and condition = '1' then   
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & regs(to_integer(unsigned(sY)))));
-        elsif inst = addcy_c and condition = '0' then
-          res <= std_logic_vector(unsigned( '0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & const) + unsigned(zero_c & carry_flag));
-        elsif inst = addcy_c and condition = '1' then
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) + unsigned('0' & regs(to_integer(unsigned(sY)))) + unsigned(zero_c & carry_flag));
-        elsif inst = sub_c and condition = '0' then
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & const));
-        elsif inst = sub_c and condition = '1' then
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & regs(to_integer(unsigned(sY)))));
-        elsif inst = subcy_c and condition = '0' then
-          res <= std_logic_vector(unsigned( '0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & const) - unsigned(zero_c & carry_flag));
-        elsif inst = subcy_c and condition = '1' then
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & regs(to_integer(unsigned(sY)))) - unsigned(zero_c & carry_flag));
-        elsif inst = compare_c and condition = '0' then
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & const));
-        elsif inst = compare_c and condition = '1' then
-          res <= std_logic_vector(unsigned('0' & regs(to_integer(unsigned(sX)))) - unsigned('0' & regs(to_integer(unsigned(sY)))));
-        -- Shift and Rotate Groupe
-        elsif inst = sr_c and direction = '1' and sr_code = shift_0 then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'right);
-          res(reg_width_c-1 downto 0) <= '0' & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1);
-        elsif inst = sr_c and direction = '1' and sr_code = shift_1 then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'right);
-          res(reg_width_c-1 downto 0) <= '1' & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1);
-        elsif inst = sr_c and direction = '1' and sr_code = shift_x then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'right);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(sX'left) & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1);
-        elsif inst = sr_c and direction = '1' and sr_code = shift_a then      
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'right);
-          res(reg_width_c-1 downto 0) <= carry_flag & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1);
-        elsif inst = sr_c and direction = '1' and sr_code = rotate  then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'right);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(sX'right) & regs(to_integer(unsigned(sX)))(reg_width_c-1 downto 1);
-        elsif inst = sr_c and direction = '0' and sr_code = shift_0 then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'left);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & '0';
-        elsif inst = sr_c and direction = '0' and sr_code = shift_1 then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'left);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & '1';        
-        elsif inst = sr_c and direction = '0' and sr_code = shift_x then
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'left);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & regs(to_integer(unsigned(sX)))(sX'right);        
-        elsif inst = sr_c and direction = '0' and sr_code = shift_a then      
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'left);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & carry_flag;                
-        elsif inst = sr_c and direction = '0' and sr_code = rotate  then      
-          carry_flag <= regs(to_integer(unsigned(sX)))(sX'left);
-          res(reg_width_c-1 downto 0) <= regs(to_integer(unsigned(sX)))(reg_width_c-2 downto 0) & regs(to_integer(unsigned(sX)))(sX'left);
-        elsif inst = returni_c then
-          carry_flag <= preserved_carry;
         end if;
       end if;
     end if;
@@ -380,13 +334,13 @@ begin
         elsif inst = load_c and condition = '1' then
           regs(to_integer(unsigned(sX))) <= regs(to_integer(unsigned(sY)));
         elsif inst = and_c or inst = or_c or inst = xor_c then 
-          regs(to_integer(unsigned(sX))) <= res(reg_width_c-1 downto 0);
+          regs(to_integer(unsigned(sX))) <= res_reg(reg_width_c-1 downto 0);
         -- Arithmetic Group
         elsif inst = add_c or inst = addcy_c or inst = sub_c or inst = subcy_c then
-          regs(to_integer(unsigned(sX))) <= res(reg_width_c-1 downto 0);
+          regs(to_integer(unsigned(sX))) <= res_reg(reg_width_c-1 downto 0);
         -- Shiift and Rotate Group 
         elsif inst = sr_c then
-          regs(to_integer(unsigned(sX))) <= res(reg_width_c-1 downto 0);
+          regs(to_integer(unsigned(sX))) <= res_reg(reg_width_c-1 downto 0);
         -- Fetch from Scratch Pad
         elsif inst = fetch_c and condition = '0' then -- constant address
           regs(to_integer(unsigned(sX))) <= scratchpad(to_integer(unsigned(const)));

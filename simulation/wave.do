@@ -15,12 +15,12 @@ add wave -noupdate -radix hexadecimal /picocpu_tb/socket_picocpu/stack
 add wave -noupdate -radix hexadecimal /picocpu_tb/socket_picocpu/stack_top
 add wave -noupdate /picocpu_tb/socket_picocpu/stack_rd
 add wave -noupdate -radix hexadecimal /picocpu_tb/socket_picocpu/addr
-add wave -noupdate -radix hexadecimal /picocpu_tb/socket_picocpu/int_ret_addr
+add wave -noupdate -radix hexadecimal /picocpu_tb/socket_picocpu/regs
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1336594 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1789157 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 283
-configure wave -valuecolwidth 164
+configure wave -valuecolwidth 428
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
 configure wave -snapdistance 10
@@ -33,4 +33,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {3800 ns}
+WaveRestoreZoom {1712319 ps} {2064378 ps}

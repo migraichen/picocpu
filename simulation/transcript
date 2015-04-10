@@ -1,10 +1,7 @@
-ls
-# call.hex  int.hex  picocpu_tb.vhd  rom.hex  run.do  sim.bat  transcript  wave.do      
 do run.do
-# Copying C:\altera\13.0\modelsim_ase\win32aloem/../modelsim.ini to modelsim.ini
+# ** Warning: (vlib-34) Library already exists at "work".
+# 
 # Modifying modelsim.ini
-# ** Warning: Copied C:\altera\13.0\modelsim_ase\win32aloem/../modelsim.ini to modelsim.ini.
-#          Updated modelsim.ini.
 # Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
 # -- Loading package STANDARD
 # -- Loading package TEXTIO
@@ -34,5 +31,115 @@ do run.do
 # Loading work.picocpu_tb(behavioral)
 # Loading work.picocpu_rom(behavioral)
 # Loading work.picocpu(behavioral)
+# ** Error: (vish-4014) No objects found matching '/picocpu_tb/socket_picocpu/int_ret_addr'.
+# Executing ONERROR command at macro ./wave.do line 18
 # 0 ps
 # 3800 ns
+do run.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# 
+# Modifying modelsim.ini
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu_rom
+# -- Compiling architecture behavioral of picocpu_rom
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu
+# -- Compiling architecture behavioral of picocpu
+# ** Warning: ../picocpu.vhd(259): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(260): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(261): (vcom-1275) Arguments of overloaded "or" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(262): (vcom-1275) Arguments of overloaded "or" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(263): (vcom-1275) Arguments of overloaded "xor" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(264): (vcom-1275) Arguments of overloaded "xor" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(265): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(266): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu_tb
+# -- Compiling architecture behavioral of picocpu_tb
+# vsim -novopt work.picocpu_tb 
+# Loading std.standard
+# Loading std.textio(body)
+# Loading ieee.std_logic_1164(body)
+# Loading ieee.numeric_std(body)
+# Loading work.picocpu_tb(behavioral)
+# Loading work.picocpu_rom(behavioral)
+# Loading work.picocpu(behavioral)
+# ** Error: (vish-4014) No objects found matching '/picocpu_tb/socket_picocpu/int_ret_addr'.
+# Executing ONERROR command at macro ./wave.do line 18
+# 0 ps
+# 3800 ns
+add wave -position insertpoint  \
+sim:/picocpu_tb/socket_picocpu/regs
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/Users/michael/Documents/picocpu/simulation/wave.do
+do run.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# 
+# Modifying modelsim.ini
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu_rom
+# -- Compiling architecture behavioral of picocpu_rom
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu
+# -- Compiling architecture behavioral of picocpu
+# ** Warning: ../picocpu.vhd(259): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(260): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(261): (vcom-1275) Arguments of overloaded "or" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(262): (vcom-1275) Arguments of overloaded "or" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(263): (vcom-1275) Arguments of overloaded "xor" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(264): (vcom-1275) Arguments of overloaded "xor" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(265): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# ** Warning: ../picocpu.vhd(266): (vcom-1275) Arguments of overloaded "and" operator are not the same length (9 vs. 8).
+# 
+# Model Technology ModelSim ALTERA vcom 10.1d Compiler 2012.11 Nov  2 2012
+# -- Loading package STANDARD
+# -- Loading package TEXTIO
+# -- Loading package std_logic_1164
+# -- Loading package NUMERIC_STD
+# -- Compiling entity picocpu_tb
+# -- Compiling architecture behavioral of picocpu_tb
+# vsim -novopt work.picocpu_tb 
+# Loading std.standard
+# Loading std.textio(body)
+# Loading ieee.std_logic_1164(body)
+# Loading ieee.numeric_std(body)
+# Loading work.picocpu_tb(behavioral)
+# Loading work.picocpu_rom(behavioral)
+# Loading work.picocpu(behavioral)
+# 0 ps
+# 3800 ns
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/Users/michael/Documents/picocpu/simulation/wave.do
