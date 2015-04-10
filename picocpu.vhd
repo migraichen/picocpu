@@ -6,7 +6,7 @@ entity picocpu is
   port (  
     clk_in                    : in  std_logic; 
     rst_n_in                  : in  std_logic;
-    -- Signale zum Programmspeicher
+    -- Signale zumdo  Programmspeicher
     inst_addr_out             : out std_logic_vector( 9 downto 0)     := ( others => '0' ); 
     inst_data_in              : in  std_logic_vector(17 downto 0);
     -- Output / Input Port
@@ -92,8 +92,11 @@ architecture behavioral of picocpu is
   
   constant stack_width_c : natural                      := 5;
   type stack_t is array (0 to (2**stack_width_c)-1) of std_logic_vector(addr'range);
-  signal stack     : stack_t := ( others => ( others => '0'));
-  signal stack_ptr : std_logic_vector(stack_width_c-1 downto 0) := ( others => '0' );
+  signal stack           : stack_t := ( others => ( others => '0'));
+  signal stack_ptr       : std_logic_vector(stack_width_c-1 downto 0) := ( others => '0' );
+  signal stack_wr        : std_logic                    := '0';
+  signal stack_rd        : std_logic                    := '0';
+  signal stack_data_in   : std_logic_vector(9 downto 0) := ( others => '0' );  
   
   constant scratchpad_width_c : natural                 := const'length;                  
   type scratchpad_t is array (0 to (2**scratchpad_width_c)-1) of std_logic_vector(reg_width_c-1 downto 0);
@@ -153,11 +156,7 @@ begin
   not_zero   <= '1' when opcode(1 downto 0) = "01" else '0';
   carry      <= '1' when opcode(1 downto 0) = "10" else '0';
   not_carry  <= '1' when opcode(1 downto 0) = "11" else '0';
-          
-  --------------------------
-  -- Program Flow Control --
-  --------------------------
-  
+            
   ---------------------
   -- Program Counter --
   ---------------------
@@ -202,50 +201,49 @@ begin
   ---------------------------
   -- TODO: TESTEN          --
   ---------------------------
-  
-  stack_top_p <= std_logic_vector(unsigned(stack(to_integer(unsigned(stack_ptr)-1)))+1);
+
+  stack_wr <= '1' when t_state = '0' and pc = int_vec_c else
+              '1' when t_state = '1' and inst = call_c and condition = '0'                                          else 
+              '1' when t_state = '1' and inst = call_c and condition = '1' and zero      = '1' and zero_flag  = '1' else
+              '1' when t_state = '1' and inst = call_c and condition = '1' and not_zero  = '1' and zero_flag  = '0' else 
+              '1' when t_state = '1' and inst = call_c and condition = '1' and carry     = '1' and carry_flag = '1' else
+              '1' when t_state = '1' and inst = call_c and condition = '1' and not_carry = '1' and carry_flag = '0' else 
+              '0';
+
+  stack_rd <= '1' when t_state = '0' and inst = return_c and condition = '0' else
+              '1' when t_state = '0' and inst = return_c and condition = '1' and zero      = '1' and zero_flag  = '1' else
+              '1' when t_state = '0' and inst = return_c and condition = '1' and not_zero  = '1' and zero_flag  = '0' else 
+              '1' when t_state = '0' and inst = return_c and condition = '1' and carry     = '1' and carry_flag = '1' else
+              '1' when t_state = '0' and inst = return_c and condition = '1' and not_carry = '1' and carry_flag = '0' else
+              '1' when t_state = '0' and inst = returni_c else
+              '0';
+
   stack_top   <= std_logic_vector(unsigned(stack(to_integer(unsigned(stack_ptr)-1))));
-                  
+  stack_top_p <= std_logic_vector(unsigned(stack(to_integer(unsigned(stack_ptr)-1)))+1);
+  
+  process(clk_in)
+  begin 
+    if clk_in'event and clk_in = '1' then   
+      if pc = int_vec_c then 
+        stack_data_in <= next_addr;
+      else 
+        stack_data_in <= pc;
+      end if;  
+    end if; 
+  end process;
+  
   process(clk_in, rst_n)
   begin 
     if rst_n = '0' then 
       stack_ptr <= ( others => '0' );
-      stack     <= ( others => ( others => '0' ));
-    elsif clk_in'event and clk_in = '1' then 
-      if t_state = '0' then
-        if int_in = '1' and int_en_flag = '1' then
-          stack(to_integer(unsigned(stack_ptr))) <= next_addr; 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
-        elsif inst = call_c and condition = '0' then
-          stack(to_integer(unsigned(stack_ptr))) <= pc; 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
-        elsif inst = call_c and condition = '1' and zero = '1' and zero_flag = '1' then
-          stack(to_integer(unsigned(stack_ptr))) <= pc; 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
-        elsif inst = call_c and condition = '1' and not_zero = '1' and zero_flag = '0' then 
-          stack(to_integer(unsigned(stack_ptr))) <= pc; 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
-        elsif inst = call_c and condition = '1' and carry = '1' and carry_flag = '1' then
-          stack(to_integer(unsigned(stack_ptr))) <= pc; 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
-        elsif inst = call_c and condition = '1' and not_carry = '1' and carry_flag = '0' then
-          stack(to_integer(unsigned(stack_ptr))) <= pc; 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
-        elsif inst = return_c and condition = '0' then
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
-        elsif inst = return_c and condition = '1' and zero = '1' and zero_flag = '1' then
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
-        elsif inst = return_c and condition = '1' and not_zero = '1' and zero_flag = '0' then 
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
-        elsif inst = return_c and condition = '1' and carry = '1' and carry_flag = '1' then
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
-        elsif inst = return_c and condition = '1' and not_carry = '1' and carry_flag = '0' then
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
-        elsif inst = returni_c then
-          stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
-        end if;  
-      end if;
-    end if;
+    elsif clk_in'event and clk_in = '1' then
+      if stack_wr = '1' then  
+        stack(to_integer(unsigned(stack_ptr))) <= stack_data_in; 
+        stack_ptr <= std_logic_vector(unsigned(stack_ptr) + 1);
+      elsif stack_rd = '1' then 
+        stack_ptr <= std_logic_vector(unsigned(stack_ptr) - 1);
+      end if;  
+    end if;  
   end process;  
 
   ------------------------------------------------------------
@@ -425,7 +423,9 @@ begin
   ------------------------------------------------------------------
   -- Interrupt Controller                                         --
   ------------------------------------------------------------------
-  
+  -- TODO:: Reset flags after jump call return instruction        -- 
+  ------------------------------------------------------------------
+    
   process(clk_in, rst_n)
   begin
     if rst_n = '0' then
@@ -447,6 +447,6 @@ begin
     end if;
   end process;
   
-  int_ack_out <= '1' when pc = int_vec_c else '0';
+  int_ack_out <= '1' when t_state = '0' and pc = int_vec_c else '0';
   
 end behavioral; 
