@@ -19,36 +19,42 @@ component picocpu is
   port (  
     clk_in                    : in  std_logic; 
     rst_n_in                  : in  std_logic;
-    -- Signale zum Programmspeicher
-    inst_addr_out             : out std_logic_vector( 9 downto 0); 
+    -- Signale zumdo  Programmspeicher
+    inst_addr_out             : out std_logic_vector( 9 downto 0)     := ( others => '0' ); 
     inst_data_in              : in  std_logic_vector(17 downto 0);
     -- Output / Input Port
-    port_id_out               : out std_logic_vector( 7 downto 0); 
-    port_wr_pulse_out         : out std_logic;
-    port_data_out             : out std_logic_vector( 7 downto 0);
-    port_rd_pulse_out         : out std_logic;
+    port_id_out               : out std_logic_vector( 7 downto 0)     := ( others => '0' ); 
+    port_wr_pulse_out         : out std_logic                         := '0';
+    port_data_out             : out std_logic_vector( 7 downto 0)     := ( others => '0' );
+    port_rd_pulse_out         : out std_logic                         := '0';
     port_data_in              : in  std_logic_vector( 7 downto 0);
     -- Interrupt Port
     int_in                    : in  std_logic;
-    int_ack_out               : out std_logic
+    int_ack_out               : out std_logic                         := '0'
   ); 
 end component; 
   
   constant sysclk_period_c    : time                          := 25 ns; 
   
+  constant reg_width_c        : natural                       :=  8;
+  constant opcode_width_c     : natural                       := 10;
+ -- constant inst_width_c       : natural                       := opcode_width_c + reg_width_c;
+  constant inst_width_c       : natural                       := 18;
+  constant inst_depth_c       : natural                       := 10;
+  
   signal   sysclk             : std_logic                     := '0'; 
   signal   rst_n              : std_logic                     := '0'; 
   
   -- Signale zwischen dem Programmspeicher und der Prozessor
-  signal   inst_address       : std_logic_vector( 9 downto 0) := ( others => '0' );
-  signal   instruction        : std_logic_vector(17 downto 0) := ( others => '0' );
+  signal   inst_address       : std_logic_vector(inst_depth_c-1 downto 0) := ( others => '0' );
+  signal   instruction        : std_logic_vector(inst_width_c-1 downto 0) := ( others => '0' );
   
   -- Signale des Output / Inpot Port
-  signal   port_id            : std_logic_vector( 7 downto 0) := ( others => '0' );
-  signal   port_wr_pulse      : std_logic                     := '0';
-  signal   port_data_out      : std_logic_vector( 7 downto 0) := ( others => '0' );
-  signal   port_rd_pulse      : std_logic                     := '0';
-  signal   port_data_in       : std_logic_vector( 7 downto 0) := ( others => '0' );
+  signal   port_id            : std_logic_vector( reg_width_c-1 downto 0) := ( others => '0' );
+  signal   port_wr_pulse      : std_logic                                 := '0';
+  signal   port_data_out      : std_logic_vector( reg_width_c-1 downto 0) := ( others => '0' );
+  signal   port_rd_pulse      : std_logic                                 := '0';
+  signal   port_data_in       : std_logic_vector( reg_width_c-1 downto 0) := ( others => '0' );
   
   -- Signale des Interrupt Port
   signal   int                : std_logic                     := '0';
@@ -82,13 +88,19 @@ begin
   system_interrupt : process
   begin
     int <= '0';
-    wait for 1300 ns;
-    wait until rising_edge(sysclk);
+    --wait;
+    wait for 930 ns;
     int <= '1';
     wait until int_ack <= '1';
     wait until rising_edge(sysclk);
     int <= '0';
   end process; 
+ 
+  system_data_in : process
+  begin 
+    wait until rising_edge(sysclk);
+    port_data_in <= std_logic_vector(unsigned(port_data_in) + 1); 
+  end process;
  
 socket_picocpu_rom : picocpu_rom 
   port map ( 

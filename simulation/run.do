@@ -3,6 +3,11 @@
 variable SimTime 3800ns  
   
 # Create and map the work library  
+vlib rom_init
+vmap work rom_init
+
+vcom -93 cpu_rom.vhd
+
 vlib work  
 vmap work work  
   
@@ -16,7 +21,7 @@ vsim -novopt work.picocpu_tb
 
 # Load the Memory with the HEX-File
 # Interrupt Program
-mem load -infile call.hex -format hex /picocpu_tb/socket_picocpu_rom/rom
+#mem load -infile call.hex -format hex /picocpu_tb/socket_picocpu_rom/rom
 # Register Operation
 #mem load -infile rom.hex -format hex /picocpu_tb/socket_picocpu_rom/rom 
 
